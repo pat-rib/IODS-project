@@ -9,5 +9,6 @@
 date()
 
 ```
-The text continues here.
+Hello!
+My name is Patricia and I am a doctoral student in **Language Studies**. I am a totally beginner in R but I would love to learn how to use it because it is important for my research. You can find more info about my course project here: [link](https://github.com/pat-rib/IODS-project)
 
