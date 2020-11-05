@@ -44,3 +44,62 @@ str(newData)
 
 # readind the data again
 head(newData)
+
+#Analysis
+
+# read the data into memory
+learning2014 <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt", sep=",", header=TRUE)
+
+# explore the structure of the data
+str(learning2014)
+
+# explore the dimension of the data
+dim(learning2014)
+
+# description of the dataset: it is a dataset that has 166 objects and 7 variables (gender, age, attitude, deep, stra, surf, and points).
+
+# show a graphical overview of the data drawing a scatter plot matrix of the variables in learning2014
+plot(learning2014)
+
+# show summaries of the variables
+summary(learning2014)
+
+# Access the gglot2 library
+library(ggplot2)
+
+# choose 3 variables where points is the target and fit a linear model
+my_model <- lm(points ~ attitude + stra + surf, data = learning2014)
+
+
+# show summaries of the model
+summary(my_model)
+# the multiple R squared of the model shows that the explanatory variablesstra and surf are not related to the target variable points because their p-values are too high.
+# since p-value for stra and surf are too high, I removed them from the model
+my_model2 <- lm(points ~ attitude, data = learning2014)
+
+# show summaries of the model again
+summary(my_model2)
+
+# produce the following diagnostic plots: QQ-plot and Residual versus Leverage
+plot(my_model2, c(1, 2, 5))
+# the main assumption of the model is that the modeling errors are normally distributed with equal variance.
+# the variance
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

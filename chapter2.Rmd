@@ -1,14 +1,89 @@
-# Insert chapter 2 title here
+# Task 2 
 
-*Describe the work you have done this week and summarize your learning.*
+*I studied data wrangling and practiced how to analyze data*
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
 
 ```{r}
 date()
 ```
 
-I created a dataset and performed data wrangling according to the task 2.
-Updated to correct data.
+## Data wrangling exercises: 
+
+A) I created a dataset and performed data wrangling according to the task 2.
+
+B) I Updated to correct the data.
+
+c) I used the following codes to:
+
+* Access the dplyr library: `library(dplyr)`
+
+* Read the data into memory: `learning2014 <- read.table("http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS2-data.txt", sep="\t", header=TRUE)`
+
+* Get a summary of the structure of learning2014: `str(learning2014)`
+
+* Retrieve the dimension of learnin2014: `dim(learning2014)`
+
+* List the columns I wanted: `variableNames <- c("Gender","Age","Attitude", "Deep", "Stra", "Surf", "Points")`
+
+* Select the columns from learning2014: `selectedData <- select(learning2014, one_of(variableNames))`
+
+
+* Build the corresponding combination variables in the original dataset:
+`selectedData$Attitude <- selectedData$Attitude / 10`
+`selectedData$Deep <- selectedData$Deep / 12`
+`selectedData$Stra <- selectedData$Stra / 8`
+`selectedData$Surf <- selectedData$Surf / 12`
+
+  + (Note: I divided each number in the column vector by the number of questions used) 
+
+* Select rows where points is greater than zero: `selectedData <- filter(selectedData, Points > 0)`
+
+* Save the dataset: `write.table(selectedData, "learning2014.csv")`
+
+* Read dataset: `newData <- read.table("learning2014.csv")`
+
+* Demonstrate that I can read the data again: `str(newData)`
+
+* Reading the data again: `head(newData)`
+
+
+## Data analysis exercises
+
+A) I read the data using the code: 
+`learning2014 <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt", sep=",", header=TRUE)`
+
+
+B)I used the following codes to:
+
+* Explore the structure of the data: `str(learning2014)`
+
+* Explore the dimension of the data: `dim(learning2014)`
+
+C) Description of the dataset: it is a dataset that has 166 objects and 7 variables (gender, age, attitude, deep, stra, surf, and points).
+
+D) I used the following codes to:
+
+* Show a graphical overview of the data drawing a scatter plot matrix of the variables in learning2014: `plot(learning2014)`
+
+* Show summaries of the variables: `summary(learning2014)`
+
+* Access the gglot2 library: `library(ggplot2)`
+
+* Choose 3 variables where points is the target and fit a linear model: `my_model <- lm(points ~ attitude + stra + surf, data = learning2014)`
+
+* Show summaries of the model: `summary(my_model)`
+
+E) Explanation of the relationship between the variables: the multiple R squared of the model shows that the explanatory variables "stra" and "surf" are not related to the target variable "points" because their p-values are too high.
+
+F) I performed the following actions using the following codes to:
+
+* Remove the explanatory variables "stra" and "surf" from the model: `my_model2 <- lm(points ~ attitude, data = learning2014)`
+
+* Show the summaries of the model: `summary(my_model2)`
+
+* Produce the following diagnostic plots: QQ-plot and Residual versus Leverage: `plot(my_model2, c(1, 2, 5))`
+
+G) Assumptions of the model: the main assumption is that the modeling errors are normally distributed with equal variance.
+
+H) Interpretation of the validity of the assumption: the variance of Residuals seems constant and independent of the fitted values. Normal QQ-plot shows very good feat for intermediate values but it deviates for small and high values.No significant leverage was observed. Concluding, the model provides a reasonable fit for the data, specially for intermediate values of the attitude variable.
+

@@ -437,7 +437,10 @@ summary {
 <ul>
 <li><a href="#introduction-to-open-data-science---course-project">Introduction to Open Data Science - Course Project</a></li>
 <li><a href="#about-the-project">About the project</a></li>
-<li><a href="#insert-chapter-2-title-here">Insert chapter 2 title here</a></li>
+<li><a href="#task-2">Task 2</a><ul>
+<li><a href="#data-wrangling-exercises">Data wrangling exercises:</a></li>
+<li><a href="#data-analysis-exercises">Data analysis exercises</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -451,23 +454,79 @@ summary {
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Thu Nov 05 11:05:57 2020&quot;</code></pre>
+<pre><code>## [1] &quot;Thu Nov 05 20:51:23 2020&quot;</code></pre>
 <p>Hello! My name is Patricia and I am a doctoral student in <strong>Language Studies</strong>. I am a totally beginner in R but I would love to learn how to use it because it is important for my research. You can find more info about my course project here: <a href="https://github.com/pat-rib/IODS-project">link</a></p>
 <hr />
 </div>
-<div id="insert-chapter-2-title-here" class="section level1">
-<h1>Insert chapter 2 title here</h1>
-<p><em>Describe the work you have done this week and summarize your learning.</em></p>
-<ul>
-<li>Describe your work and results clearly.</li>
-<li>Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.</li>
-<li>Assume the reader has no previous knowledge of your data or the more advanced methods you are using.</li>
-</ul>
+<div id="task-2" class="section level1">
+<h1>Task 2</h1>
+<p><em>I studied data wrangling and practiced how to analyze data</em></p>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Thu Nov 05 11:05:57 2020&quot;</code></pre>
-<p>I created a dataset and performed data wrangling according to the task 2. Updated to correct data.</p>
+<pre><code>## [1] &quot;Thu Nov 05 20:51:23 2020&quot;</code></pre>
+<div id="data-wrangling-exercises" class="section level2">
+<h2>Data wrangling exercises:</h2>
+<ol style="list-style-type: upper-alpha">
+<li><p>I created a dataset and performed data wrangling according to the task 2.</p></li>
+<li><p>I Updated to correct the data.</p></li>
+</ol>
+<ol start="3" style="list-style-type: lower-alpha">
+<li>I used the following codes to:</li>
+</ol>
+<ul>
+<li><p>Access the dplyr library: <code>library(dplyr)</code></p></li>
+<li><p>Read the data into memory: <code>learning2014 &lt;- read.table(&quot;http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS2-data.txt&quot;, sep=&quot;\t&quot;, header=TRUE)</code></p></li>
+<li><p>Get a summary of the structure of learning2014: <code>str(learning2014)</code></p></li>
+<li><p>Retrieve the dimension of learnin2014: <code>dim(learning2014)</code></p></li>
+<li><p>List the columns I wanted: <code>variableNames &lt;- c(&quot;Gender&quot;,&quot;Age&quot;,&quot;Attitude&quot;, &quot;Deep&quot;, &quot;Stra&quot;, &quot;Surf&quot;, &quot;Points&quot;)</code></p></li>
+<li><p>Select the columns from learning2014: <code>selectedData &lt;- select(learning2014, one_of(variableNames))</code></p></li>
+<li><p>Build the corresponding combination variables in the original dataset: <code>selectedData$Attitude &lt;- selectedData$Attitude / 10</code> <code>selectedData$Deep &lt;- selectedData$Deep / 12</code> <code>selectedData$Stra &lt;- selectedData$Stra / 8</code> <code>selectedData$Surf &lt;- selectedData$Surf / 12</code></p>
+<ul>
+<li>(Note: I divided each number in the column vector by the number of questions used)</li>
+</ul></li>
+<li><p>Select rows where points is greater than zero: <code>selectedData &lt;- filter(selectedData, Points &gt; 0)</code></p></li>
+<li><p>Save the dataset: <code>write.table(selectedData, &quot;learning2014.csv&quot;)</code></p></li>
+<li><p>Read dataset: <code>newData &lt;- read.table(&quot;learning2014.csv&quot;)</code></p></li>
+<li><p>Demonstrate that I can read the data again: <code>str(newData)</code></p></li>
+<li><p>Reading the data again: <code>head(newData)</code></p></li>
+</ul>
+</div>
+<div id="data-analysis-exercises" class="section level2">
+<h2>Data analysis exercises</h2>
+<ol style="list-style-type: upper-alpha">
+<li>I read the data using the code: <code>learning2014 &lt;- read.table(&quot;http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt&quot;, sep=&quot;,&quot;, header=TRUE)</code></li>
+</ol>
+<p>B)I used the following codes to:</p>
+<ul>
+<li><p>Explore the structure of the data: <code>str(learning2014)</code></p></li>
+<li><p>Explore the dimension of the data: <code>dim(learning2014)</code></p></li>
+</ul>
+<ol start="3" style="list-style-type: upper-alpha">
+<li><p>Description of the dataset: it is a dataset that has 166 objects and 7 variables (gender, age, attitude, deep, stra, surf, and points).</p></li>
+<li><p>I used the following codes to:</p></li>
+</ol>
+<ul>
+<li><p>Show a graphical overview of the data drawing a scatter plot matrix of the variables in learning2014: <code>plot(learning2014)</code></p></li>
+<li><p>Show summaries of the variables: <code>summary(learning2014)</code></p></li>
+<li><p>Access the gglot2 library: <code>library(ggplot2)</code></p></li>
+<li><p>Choose 3 variables where points is the target and fit a linear model: <code>my_model &lt;- lm(points ~ attitude + stra + surf, data = learning2014)</code></p></li>
+<li><p>Show summaries of the model: <code>summary(my_model)</code></p></li>
+</ul>
+<ol start="5" style="list-style-type: upper-alpha">
+<li><p>Explanation of the relationship between the variables: the multiple R squared of the model shows that the explanatory variables “stra” and “surf” are not related to the target variable “points” because their p-values are too high.</p></li>
+<li><p>I performed the following actions using the following codes to:</p></li>
+</ol>
+<ul>
+<li><p>Remove the explanatory variables “stra” and “surf” from the model: <code>my_model2 &lt;- lm(points ~ attitude, data = learning2014)</code></p></li>
+<li><p>Show the summaries of the model: <code>summary(my_model2)</code></p></li>
+<li><p>Produce the following diagnostic plots: QQ-plot and Residual versus Leverage: <code>plot(my_model2, c(1, 2, 5))</code></p></li>
+</ul>
+<ol start="7" style="list-style-type: upper-alpha">
+<li><p>Assumptions of the model: the main assumption is that the modeling errors are normally distributed with equal variance.</p></li>
+<li><p>Interpretation of the validity of the assumption: the variance of Residuals seems constant and independent of the fitted values. Normal QQ-plot shows very good feat for intermediate values but it deviates for small and high values.No significant leverage was observed. Concluding, the model provides a reasonable fit for the data, specially for intermediate values of the attitude variable.</p></li>
+</ol>
 <hr />
 <p>(more chapters to be added similarly as we proceed with the course!)</p>
+</div>
 </div>
 
 
