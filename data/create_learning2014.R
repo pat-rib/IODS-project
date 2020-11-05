@@ -20,17 +20,24 @@ variableNames <- c("Gender","Age","Attitude", "Deep", "Stra", "Surf", "Points")
 
 # select the columns from learning2014
 selectedData <- select(learning2014, one_of(variableNames))
-selectedDataMeans <- rowMeans(selectedData)
-selectedDataNorm <-  selectedData / selectedDataMeans
+
+# divide each number in the column vector by the number of questions used to 
+# build the corresponding combination variables in the original dataset
+
+selectedData$Attitude <- selectedData$Attitude / 10
+selectedData$Deep <- selectedData$Deep / 12
+selectedData$Stra <- selectedData$Stra / 8
+selectedData$Surf <- selectedData$Surf / 12
+
 
 # select rows where points is greater than zero
 selectedData <- filter(selectedData, Points > 0)
 
 # save dataset
-write.csv(selectedData, "learning2014.csv")
+write.table(selectedData, "learning2014.csv")
 
 #read dataset
-newData <- read.csv("learning2014.csv") 
+newData <- read.table("learning2014.csv") 
 
 # demonstrating that I can read the data again
 str(newData)
