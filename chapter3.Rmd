@@ -1,0 +1,134 @@
+# Exercise 3
+
+*Logistic regression*
+
+```{r}
+date()
+```
+
+## Analysis
+
+I start by reading the joined student alcohol consumption data set that I have created in the data wrangling task. I will also remove the first column added by read.csv and print out the the names of the variables in this data set:
+```{r}
+alc_data <- read.csv("data/alc_data.csv", header=TRUE)
+alc_data <- alc_data[,-1]
+colnames(alc_data)
+```
+The data consist of 382 objects and 35 variables. It is a joined data set from two questionnaires that studied alcohol consumption and the school performance of the students in maths and Portuguese language. The data set contains only the data from the students that answered both questionnaires.  
+Aiming to study the relationship between high alcohol consumption and some other variables, I will choose 4 variables from the data: 
+
+```{r}
+variableNames <- c("sex","G3","absences", "studytime")
+```
+I have decided to use these variables because my hypothesis is that men are more suitable to woman to consume higher amount of alcohol and this fact can affect more their school performance, resulting in lower grades and more absences for men. Besides that, I think study time will be lower for those students with higher alcohol consumption.
+
+Now I will explore numerically the distribution of my chosen variables, showing their relationship with alcohol consumption:  
+
+```{r}
+library(dplyr)
+library(ggplot2)
+alc_data %>% group_by(sex, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
+alc_data %>% group_by(sex, high_use) %>% summarise(count = n(), mean_studytime = mean(studytime))
+alc_data %>% group_by(sex, high_use) %>% summarise(count = n(), mean_absences = mean(absences))
+```
+According to the numbers presented above, the school grade of women was not significantly affected by high use of alcohol, while men showed lower grades when high use was true. Moving to study time, we can say that it was not affected by high use of alcohol, regardless of the student's gender. Absence seems to be the variable mostly impacted by high use of alcohol, showing higher variation for both sexes.
+
+Let's see graphically how the distribution of my chosen variables relates with alcohol consumption:
+
+```{r}
+g1 <- ggplot(alc_data, aes(x = high_use, y = G3, col = sex))
+g1 + geom_boxplot() + ggtitle("Grade versus high use of alcohol")
+g2 <- ggplot(alc_data, aes(x = high_use, y = absences, col = sex))
+g2 + geom_boxplot() + ggtitle("Absences versus high use of alcohol")
+g3 <- ggplot(alc_data, aes(x = high_use, y = studytime, col = sex))
+g3 + geom_boxplot() + ggtitle("Study time versus high use of alcohol")
+```
+
+The graphics show similar results as the numeric tables, though here we can have more insights into the spread of data around the median. Men's school grade are lower when the alcohol use is high, study time was not not significantly affected by high use of alcohol and absence from school was higher among men having high use of alcohol.
+Comparing these numeric and graphical results with my previously stated hypotheses, it seems that they are similar regarding the bigger impact of high use of alcohol on men's grades and absences. However, they disagree about study time that did not seem to be affected by alcohol use as I have predicted initially. 
+
+Next we will use logistic regression to explore the relationship between high/low alcohol consumption and the variables above. 
+```{r}
+# find the model with glm()
+m <- glm(high_use ~ G3 + absences + sex + studytime, data = alc_data, family = "binomial")
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+# compute odds ratios (OR)
+OR <- coef(m) %>% exp
+
+# compute confidence intervals (CI)
+confint(m)
+CI <- confint(m) %>% exp
+# print out the odds ratios with their confidence intervals
+cbind(OR, CI)
+```
+
+The model shows that the p-values for the variables "absences" and "sex" are low, indicating that they have good chances to be related with the target variable. The OR are greater than 1 for "absences" and "sex", confirming their connection with high alcohol use. The values of OR within the confidence intervals for "absences" and "sex" are higher than 1, further confirming their strong relation with alcohol high use. 
+
+In the sequel I will focus the analysis on variables "sex" and "absences". I will calculate again the logistic regression using only those two variables and explore the predictive power of the model.
+
+```{r}
+# Model with relevant statistical relationship
+# find the model with glm()
+m2 <- glm(high_use ~ sex + absences, data = alc_data, family = "binomial")
+
+# compute odds ratios (OR)
+OR <- coef(m2) %>% exp
+
+# compute confidence intervals (CI)
+CI <- confint(m2) %>% exp
+# print out the odds ratios with their confidence intervals
+cbind(OR, CI)
+
+# predict() the probability of high_use
+probabilities <- predict(m2, type = "response")
+
+
+# add the predicted probabilities to 'alc'
+alc_data <- mutate(alc_data, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc_data <- mutate(alc_data, prediction = probability > 0.5)
+
+# tabulate the target variable versus the predictions
+confusionTable <- table(high_use = alc_data$high_use, prediction = alc_data$prediction)
+normTable <- confusionTable / dim(alc_data)[1]
+wrongly <- normTable[2,1] + normTable[1,2]
+print(paste("Total proportion of innacurately classified individuals: ", wrongly))
+
+```
+
+The OR improved slightly when only the most significant variables where used to build the model. 
+The model has a better performance than a simple guess since it has around 0.26 probability of error compared to the expected 0.5 probability of error of a simple guess.  
+
+Bonus task:
+
+
+```{r}
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(class = alc_data$high_use, prob = alc_data$probability)
+
+# K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc_data, cost = loss_func, glmfit = m2, K = 10)
+
+# average number of wrong predictions in the cross validation
+print(paste("Average number of wrong predictions in the cross validation: ", cv$delta[1]))
+
+```
+Performing 10-fold cross-validation, I can see that my model has approximately the same test set performance of the model introduced in DataCamp (about 0.26 error) 
+
+
+
+
+
