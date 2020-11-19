@@ -1,0 +1,132 @@
+# Exercise 4
+
+*Clustering and classification*
+
+```{r}
+date()
+```
+
+# Analysis
+
+## Task 1
+
+First of all, I created my new RMarkdown file and saved it. Then I included the file as a child file in my ‘index.Rmd’ file.
+
+## Task 2
+
+In order to load the Boston data from the MASS package, explore the structure and the dimensions of the data I used the following codes:
+
+```{r}
+library(MASS)
+data("Boston")
+str(Boston)
+dim(Boston)
+```
+The dataset consists of 506 objects and  14 variables about socioeconomic and environmental information of the population living in the suburbs of Boston. Variables with numeric values, such as per capita crime rate by town, proportion of residential land zoned for lots over 25,000 sq.ft., nitrogen oxides concentration (parts per 10 million), average number of rooms per dwelling, proportion of owner-occupied units built prior to 1940, pupil-teacher ratio by town, and proportion of blacks by town are used to assess housing values in this area.
+
+## Task 3
+Let,s have a graphical overview of the data and the summaries of the variables in the data. 
+
+```{r}
+pairs(Boston)
+summary(Boston)
+```
+The graphical overview shows that some variables are related and form obvious clusters, such as "tax" vs "lstat", and "tax" vs "black". Other variables seem to be related, showing defined lines, but the clusters are not obvious, as for exemple "medv" vs "lstat", and "medv" vs "rm". Lastly, we can see some variables that apparently do not form clusters and maybe are not related, like "age" vs "indus", and "rm" vs "nox".
+
+The outputs from the summaries show that the range values of the variables varies considerably. For exemple, "rm" varies from 3 to 8 and "chas" from 0 to 1. 
+
+## Task 4
+
+Here we need to standardize the dataset and print out summaries of the scaled data: 
+
+```{r}
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+```
+Now we can see that the distribution of the variables are centralized around the mean, which is 0, with a similar range of values.
+
+In order to complete this task I will create a categorical variable of the crime rate from the scaled crime rate, using the quantiles as the break points in the categorical variable. But before doing that I need to change the object to a data frame. I will also drop the old crime rate variable from the dataset, add the new categorical value to scaled data, and divide it into train and test sets, so that 80% of the data belongs to the train set.
+
+```{r}
+boston_scaled <- as.data.frame(boston_scaled)
+bins <- quantile(boston_scaled$crim)
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, labels = c("low", "med_low", "med_high", "high"))
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+n <- nrow(boston_scaled)
+ind <- sample(n,  size = n * 0.8)
+train <- boston_scaled[ind,]
+test <- boston_scaled[-ind,]
+```
+
+## Task 5
+
+Everything is ready now to fit the linear discriminant analysis on the train set. I will use the categorical crime rate as the target variable and all the other variables as predictor variables. A LDA (bi)plot will be performed to show the results.
+
+
+```{r}
+lda.fit <- lda(crime ~ ., data = train)
+lda.fit
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+classes <- as.numeric(train$crime)
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 1)
+```
+
+## Task 6
+
+In this task I will save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Also I need to predict the classes with the LDA model on the test data and cross tabulate the results with the crime categories from the test set. 
+
+```{r}
+correct_classes <- test$crime
+test <- dplyr::select(test, -crime)
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+The model worked well to predict the categories 'med_high' and 'high', which were already more separated in the trained model. Predictions for 'low' was never mixed with 'med_high' and 'high' while 'med_high' was the category more difficult to predict since it was mixed with the others categories, except 'high'.
+
+## Task 7
+
+
+Here I will reload the Boston dataset and standardize it. After that I will calculate the distances between the observations, run k-means algorithm on the dataset, and visualize the clusters separated with colors.
+
+
+```{r}
+data('Boston')
+boston_scaled <- scale(Boston)
+dist_eu <- dist(boston_scaled)
+dist_man <- dist(boston_scaled, method = 'manhattan')
+km <-kmeans(boston_scaled, centers = 3)
+pairs(boston_scaled, col = km$cluster )
+
+```
+
+To investigate what is the optimal number of clusters, I will use the following codes:
+```{r}
+library(ggplot2)
+set.seed(123)
+k_max <- 10
+twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled, k)$tot.withinss})
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+km <-kmeans(Boston, centers = 2)
+pairs(Boston, col = km$cluster)
+```
+
+According to my investigation, the optimal number of clusters is 2. After running the algorithm again, the results are similar to what the graphical overview showed in the task 3. Some variables are related and form obvious clusters, such as "tax" vs "lstat", and "tax" vs "black". I think the clusters are more visible now with two colors. However, the other variables that seemed to be related because of the lines they form, now look more mixed as, for example, "medv" vs "lstat", and "medv" vs "rm". Now we can see better some variables that apparently do not form clusters and do not seem to be related, like "age" vs "indus", and "rm" vs "nox".
+
+Since the plot is a bit confusing due to the large amount of variables, I will plot the dataset with less variables:
+
+```{r}
+pairs(Boston[6:10], col = km$cluster )
+```
+
+Now we can see that the variables "rad" and "tax" are the most influential in this group. That makes sense because both the access to radial highways (rad) and the full-value property-tax rate (tax) can affect housing values in a area.
+
+
