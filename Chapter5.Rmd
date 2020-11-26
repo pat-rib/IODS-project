@@ -1,0 +1,116 @@
+# Exercise 5
+
+*Dimensionality reduction techniques*
+
+```{r}
+date()
+```
+
+# Analysis
+
+First of all I will load the some packages:
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+detach("package:MASS", unload = TRUE)
+```
+
+## Task 1
+
+Here I will prepare the dataset to use in this analysis. After the preparation, I will show a graphical overview of the data and show summaries of the variables in the data.
+
+```{r}
+human_clean <- read.csv("human_data.csv")
+rownames(human_clean) <- human_clean$X
+human_clean <- dplyr::select(human_clean, -X)
+ggpairs(human_clean)
+summary(human_clean)
+```
+
+Now I will explore the distributions of the variables and the relations between them
+
+```{r}
+cor_matrix<-cor(human_clean) %>% round(digits = 2)
+print(cor_matrix)
+corrplot(cor_matrix, method="circle", type = "upper", cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
+```
+
+About the distribution one can immediately observe that the variables have very different range of values, in particular GNI.PC (Gross National Income Per Capita). Moreover, most variables are have highly asymmetrical distributions, e.g. GNI.PC and Mat.MR (Maternal Mortality Ratio). 
+Regarding the relationship between the variables, we can see that some of them show special relations. For example, Female secondary education (Edu.Sec.F) shows a positive correlation with years of education (EY.Edu), and years of education (EY.Edu) has also a positive correlation with life expectancy at birth (LE.Birth). As examples of variables with negative relationship we can cite maternal mortality (Mat.MR) and life expectancy at birth (LE.Birth). Also adolescent birth (Ado.Br) shows negative relation with life expectancy at birth (LE.Birth). The Percentage of Female Representation in Parliament (Per.Rep) is not strongly correlated with the other variables. 
+
+## Task 2
+
+Now I will perform  a PCA on the not-standardized human data, show the variability captured by the principal components and draw a biplot displaying the observations by the first two principal components.
+
+```{r biplot-nonstd, fig.cap="Biplot of non-standardized variables."}
+pca_human <- prcomp(human_clean)
+s <- summary(pca_human)
+s
+pca_pr <- round(100*s$importance[2,], digits = 1)
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+
+```
+
+## Task 3
+
+Now I will perform  a PCA on the standardized human data, show the variability captured by the principal components and draw a biplot displaying the observations by the first two principal components.
+
+```{r biplot-std, fig.cap="Biplot of standardized variables. Expected Years of Education, Female Secondary Education, Gross income percapita and Life Expectancy at Birth  are aligned with PC1, showing a relationsip between them. Maternal mortality and early pregnancy also also have conection with PC1, but in nearly opposite direction as the other variables given the nearly 180 degrees separation between them."}
+human_std <- scale(human_clean)
+summary(human_std)
+pca_human_std <- prcomp(human_std)
+s_std <- summary(pca_human_std)
+s_std 
+pca_pr <- round(100*s_std$importance[2,], digits = 1)
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+biplot(pca_human_std, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+```
+
+The results in both plots are very different because the non-standardized data concentrate nearly 100% of the information in PC1 and the values of the PCs vary significantly. Conversely, the standardized data shows PC values better divided and distributed, even though PC1 still concentrates 57% of the information.
+
+
+## Task 4 
+
+My personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data is that the PCA captures the fact that Per.Rep and and Labour.F variables have relatively low correlation with all the other variables in the set. This can be seen by the fact that those variables are mostly in the direction of PC2. Moreover, the remaining variables have similar cross-correlation between them (with possible exeption of the sign), which can be seen in the fact that all these variables are relatively aligned along the axis of main component PC1. 
+
+## Tasks 5
+
+In this task I will load the tea dataset from the package FactoMineR, look at its structure and dimensions, and visualize it. 
+
+```{r}
+library(FactoMineR)
+library(tidyr)
+library(dplyr)
+data(tea)
+str(tea)
+dim(tea)
+```
+
+Now it's time to do the MCA on certain columns of the data, but first I will select the columns I want and then I will look at the summaries and structure of the data. Finally, I will visualize it. 
+
+```{r}
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+tea_time <- select(tea, one_of(keep_columns))
+summary(tea_time)
+str(tea_time)
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+```
+
+The MCA comes now, together with a summary of the model and a plot to visualize it
+
+```{r}
+mca <- MCA(tea_time, graph = FALSE)
+summary(mca)
+plot(mca, invisible=c("ind"), habillage = "quali")
+
+```
+
+From the MCA plot we can see that "tea shop" and "unpackaged" are more separate from the others, and relatively close to each other. Categories "green", "other", "chain store+tea shop", and "tea bag+unpackaged"  are also separated from the others but not as much as the first two. The remaining categories still are somewhat distinct but they are closer to each other in general.
+
+```{r}
+```
